@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>病人信息管理</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+    <script type="text/html" id="indexTpl">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">科室信息</div>
+                <div class="layui-card-body">
+                    <table class="layui-hide" id="main-table" lay-filter="main-table"></table>
+                    <script type="text/html" id="toolbarDemo">
+                        <span class="layui-inline" style="width: 250px;">
+                                <input class="layui-input" name="param" id="param" placeholder="根据科室名称查询" autocomplete="off">
+                            </span>
+                        <span class="layui-btn layui-btn-sm layui-bg-red" lay-event="querySearch">
+                                <i class="layui-icon">&#xe615;</i>查询
+                            </span>
+                    </script>
+                    <script type="text/html" id="barDemo">
+                        <a class="layui-btn layui-btn-xs" lay-event="selDoc">查看所属该科室医生</a>
+                        <a class="layui-btn layui-btn-xs" lay-event="selPat">查看所属该科室病人</a>
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script th:src="@{/static/layui/layui.js}"></script>
+<script>
+    var deptName='';
+    layui.use(['table','form'], function () {
+        var $ = layui.$;
+        var table = layui.table;
+        table.render({
+            elem:'#main-table',
+            height:650,
+            url:'/dept/deptQueryPage',
+            method:'POST',
+            page:true,
+            id:'table-load',
+            toolbar:'#toolbarDemo',
+            cols:
+                [
+                    [
+                        {title: '序号' ,templet:'#indexTpl',width: 300 ,align:'center'},
+                        {field:'deptNum',title: '科室号',align:'center',width: 300,sort: true},
+                        {field:'deptName',title: '科室名',align:'center',width: 300},
+                        {title: '操作',align: 'center',toolbar: '#barDemo',field: 'right'}
+                    ]
+                ]
+        });
+
+        //监听查询按钮
+        table.on('toolbar(main-table)',function (obj){
+            switch (obj.event){
+                case 'add':
+                    layer.open({
+                        type : 2,
+                        title : '新增病人信息' ,
+                        content:'/dept/deptPage',
+                        shade:[0.8,'#393d49'],
+                        area:['900px','600px'],
+                        btn: ['确定','取消'],
+                        yes:function (index,layero){
+                            var iframeWindow = window['layui-layer-iframe'+index];
+                            var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                            //监听提交
+                            iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data){
+                                var field = data.field;
+                                $.ajax({
+                                    url: '/dept/deptAdd' ,
+                                    data: field,
+                                    async: false,//非异步，需要等待提交成功
+                                    cache:false,//不需要缓存
+                                    success:function (str){
+                                        if (str.code === 0){
+                                            table.reload('table-load');//刷新
+                                        }
+                                        layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                    }
+                                });
+                                layer.close(index);  //关闭弹窗
+                            });
+                            submit.trigger('click');
+                        },
+                        success:function (layero,index){
+
+                        }
+                    });
+                    break;
+                case 'querySearch':
+                    var param = $('#param').val();
+                    table.reload('table-load',{
+                        where: {
+                            param: param
+                        }
+                    });
+                    $('#param').val();
+                    break;
+            }
+        });
+        //监听编辑和删除按钮
+        table.on('tool(main-table)',function (obj){
+            var data = obj.data; //当前行所有对象
+            switch (obj.event){
+                case 'edit':
+                    layer.open({
+                        type : 2,
+                        title : '修改科室信息' ,
+                        content:'/dept/queryDeptById?id=' + data.id,
+                        shade:[0.8,'#393d49'],
+                        area:['900px','600px'],
+                        btn: ['确定','取消'],
+                        yes:function (index,layero){
+                            var iframeWindow = window['layui-layer-iframe'+index];
+                            var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                            //监听提交
+                            iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data){
+                                var field = data.field;
+                                $.ajax({
+                                    url: '/dept/deptEdit' ,
+                                    data: field,
+                                    async:false,//非异步，需要等待提交成功
+                                    cache:false,//不需要缓存
+                                    success:function (str){
+                                        if (str.code === 0){
+                                            table.reload('table-load');//刷新
+                                        }
+                                        layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                    }
+                                });
+                                layer.close(index);  //关闭弹窗
+                            });
+                            submit.trigger('click');
+                        },
+                        success:function (layero,index){
+
+                        }
+                    });
+                    break;
+                case 'del':
+                    layer.confirm('确认要删除吗?',function (index){
+                        $.ajax({
+                            url: '/dept/delDeptById?id=' +data.id ,
+                            data: null,
+                            async:false,//非异步，需要等待提交成功
+                            cache:false,//不需要缓存
+                            success:function (str){
+                                table.reload('table-load');//刷新
+                                layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                            }
+                        });
+                    });
+                    break;
+                case 'selDoc':
+                    layer.open({
+                        type : 2,
+                        title : '信息' ,
+                        content:'/doctor/queryDoctorByName?docBelong=' + data.deptName,
+                        shade:[0.8,'#393d49'],
+                        area:['900px','600px'],
+                        btn: ['确定','取消'],
+                        yes:function (index,layero){
+
+                        },
+                        success:function (layero,index){
+                            deptName = data.deptName;
+                        }
+                    });
+                    break;
+                case 'selPat':
+                    layer.open({
+                        type : 2,
+                        title : '信息' ,
+                        content:'/patient/queryPatientByBelongHome?belongHome=' + data.deptName,
+                        shade:[0.8,'#393d49'],
+                        area:['1300px','600px'],
+                        btn: ['确定','取消'],
+                        yes:function (index,layero){
+
+                        },
+                        success:function (layero,index){
+                            deptName = data.deptName;
+                        }
+                    });
+                    break;
+            }
+        });
+    });
+</script>
+</body>
+</html>

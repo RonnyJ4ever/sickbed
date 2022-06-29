@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>病人信息</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+    <script type="text/html" id="indexTpl">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+</head>
+<body class="layui-layout-body">
+<div class="layui-fluid">
+    <div class="layui-row layui-col-space15">
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">医生信息</div>
+                <div class="layui-card-body">
+                    <table class="layui-hide" id="main-table" lay-filter="main-table"></table>
+                    <script type="text/html" id="toolbarDemo">
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script th:src="@{/static/layui/layui.js}"></script>
+
+<script>
+    layui.use(['table','form'], function () {
+        var deptName = parent.deptName;
+        var $ = layui.$;
+        var table = layui.table;
+        table.render({
+            elem: '#main-table',
+            height: 500,
+            url: '/patient/queryPatientByBelongHomeA?belongHome=' + deptName,
+            method: 'POST',
+            page: true,
+            id: 'table-load',
+            toolbar:'#toolbarDemo',
+            cols:
+                [
+                    [
+                        {title: '序号' ,templet:'#indexTpl',width: 100 ,align:'center'},
+                        {field:'name',title: '病人名称',align:'center',width: 100},
+                        {field:'age',title: '病人年龄',align:'center',width: 120,sort: true},
+                        {field:'sex',title: '病人性别',align:'center',width: 100},
+                        {field:'inTime',title: '入院时间',align:'center',width: 250,sort: true,
+                            templet:"<div>{{layui.util.toDateString(d.inTime,'yyyy-MM-dd HH:mm:ss')}}</div>"},
+                        {field:'belongHome',title: '所属科室',align:'center',width: 100},
+                        {field:'bodyMes',title: '病人身体状况',align:'center',width: 150},
+                        {field:'mainDoc',title: '主治医师',align:'center',width: 100},
+                        {field:'homeNum',title: '病房号',align:'center',width: 100,sort: true},
+                        {field:'bedNum',title: '病床号',align:'center',width: 100,sort: true},
+                    ]
+                ]
+        });
+
+    });
+
+</script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>智慧病床管理系统</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+</head>
+<body>
+    <div class="login-main">
+    <header class="layui-elip">登录</header>
+        <form class="layui-form">
+            <div class="layui-input-inline">
+            <input type="text" name="username" required lay-verify="required" placeholder="用户名" class="layui-input">
+            </div>
+            <div class="layui-input-inline">
+                <input type="password" name="password" required lay-verify="required" placeholder="密码" class="layui-input">
+            </div>
+
+            <div class="layui-input-block">
+                <input type="radio" lay-filter="role" name="role" value="1" lay-skin="primary" title="管理员" >
+                <input type="radio" lay-filter="role" name="role" value="2" lay-skin="primary" title="护士" >
+            </div>
+            <div class="layui-input-inline login-btn">
+               <button lay-submit lay-filter="login" class="layui-btn">登录</button>
+            </div>
+        </form>
+    </div>
+
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+
+            layui.use("form", function () {
+                var form = layui.form;
+                var $ = layui.$;
+
+                //监听提交
+                form.on("submit(login)", function (data) {
+                    var radios = $("input[type='radio']:checked").val();
+                    $.ajax({
+                        url: "/tologin",
+                        type: "POST",
+                        data: data.field,
+                        dataType: "json",
+
+                        success: function (result) {
+
+                            if (result.code == 1) {
+                                // alert(radios);
+                                if (!radios){
+                                    layer.msg("请选择权限！");
+                                }
+                                else if (radios == 1) {
+                                    layer.msg(result.msg, {icon: result.icon, anim: result.anim}, function () {
+                                        //alert(radios);
+                                        window.location.href = "/index"; //转向主页
+                                    });
+                                } else {
+                                    layer.msg(result.msg, {icon: result.icon, anim: result.anim}, function () {
+                                        //alert(radios);
+                                        window.location.href = "/doctorIndex"; //转向主页
+                                    });
+                                }
+                            }else{
+                                layer.msg(result.msg);
+                            }
+
+
+                        }
+                    });
+                    return false;
+                });
+
+            });
+
+    </script>
+</body>
+</html>

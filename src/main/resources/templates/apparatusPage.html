@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>器械信息</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+    <script type="text/html" id="indexTpl">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-card">
+        <div class="layui-card-body" style="padding: 20px;" >
+            <form class="layui-form layui-form-pane" action="">
+                <input name="id" th:value="${obj?.id}" class="layui-input layui-hide"/>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">器械编号</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="apparatusNum" th:value="${obj?.apparatusNum}" lay-verify="required" placeholder="请输入器械编号" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">器械名称</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="apparatusName" th:value="${obj?.apparatusName}" lay-verify="required" placeholder="请输入器械名称" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">器械价格</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="apparatusPrice" th:value="${obj?.apparatusPrice}" lay-verify="required" placeholder="请输入器械价格" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">器械库存</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="apparatusQuantity" th:value="${obj?.apparatusQuantity}" lay-verify="required" placeholder="请输入器械库存" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item">
+                    <label class="layui-form-label">器械备注</label>
+                    <div class="layui-input-block">
+                        <input type="text" name="apparatusRen" th:value="${obj?.apparatusRen}" lay-verify="required" placeholder="请输入器械备注" autocomplete="off" class="layui-input">
+                    </div>
+                </div>
+                <div class="layui-form-item layui-hide">
+                    <input type="button" lay-submit lay-filter="LAY-front-submit" id="LAY-front-submit" value="确认">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script th:src="@{/static/layui/layui.js}"></script>
+<script>
+    layui.use(['form'], function () {
+        var $ = layui.$;
+
+    });
+</script>
+</body>
+</html>

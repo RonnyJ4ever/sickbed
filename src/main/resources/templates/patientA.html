@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>病人信息管理</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+    <script type="text/html" id="indexTpl">
+        {{d.LAY_TABLE_INDEX+1}}
+    </script>
+</head>
+<body class="layui-layout-body">
+    <div class="layui-fluid">
+        <div class="layui-row layui-col-space15">
+            <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header">病人信息</div>
+                    <div class="layui-card-body">
+                        <table class="layui-hide" id="main-table" lay-filter="main-table"></table>
+                        <script type="text/html" id="toolbarDemo">
+                            <span class="layui-inline" lay-event="add">
+                                <i class="layui-icon">&#xe654;</i>
+                            </span>
+                            <span class="layui-inline" style="width: 250px;">
+                                <input class="layui-input" name="param" id="param" placeholder="根据病人名称查询" autocomplete="off">
+                            </span>
+                            <span class="layui-btn layui-btn-sm layui-bg-red" lay-event="querySearch">
+                                <i class="layui-icon">&#xe615;</i>查询
+                            </span>
+                        </script>
+                        <script type="text/html" id="barDemo">
+                            <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+                            <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="move">申请调度病人病房权限</a>
+                        </script>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+<script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        layui.use(['table','form'], function () {
+             var $ = layui.$;
+             var table = layui.table;
+             table.render({
+                 elem:'#main-table',
+                 height:900,
+                 url:'/patient/patientQueryPage',
+                 method:'POST',
+                 page:true,
+                 id:'table-load',
+                 toolbar:'#toolbarDemo',
+                 cols:
+                     [
+                         [
+                     {title: '序号' ,templet:'#indexTpl',width: 100 ,align:'center'},
+                     {field:'name',title: '病人名称',align:'center',width: 100},
+                     {field:'age',title: '病人年龄',align:'center',width: 120,sort: true},
+                     {field:'sex',title: '病人性别',align:'center',width: 100},
+                     {field:'inTime',title: '入院时间',align:'center',width: 250,sort: true,
+                     templet:"<div>{{layui.util.toDateString(d.inTime,'yyyy-MM-dd HH:mm:ss')}}</div>"},
+                     {field:'belongHome',title: '所属科室',align:'center',width: 100},
+                     {field:'bodyMes',title: '病人身体状况',align:'center',width: 150},
+                     {field:'mainDoc',title: '主治医师',align:'center',width: 100},
+                     {field:'homeNum',title: '病房号',align:'center',width: 100,sort: true},
+                     {field:'bedNum',title: '病床号',align:'center',width: 100,sort: true},
+                     {field:'apply',title: '申请房号',align:'center',width: 100},
+                     {field:'applyBed',title: '申请床号',align:'center',width: 100},
+                             {title: '操作',align: 'center',toolbar: '#barDemo',field: 'right'}
+                        ]
+                     ]
+             });
+
+             //监听查询按钮
+            table.on('toolbar(main-table)',function (obj){
+                switch (obj.event){
+                    case 'add':
+                        layer.open({
+                            type : 2,
+                            title : '新增病人信息' ,
+                            content:'/patient/patientPageB',
+                            shade:[2,'#393d49'],
+                            area:['900px','600px'],
+                            btn: ['确定','取消'],
+                            yes:function (index,layero){
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data){
+                                    var field = data.field;
+                                    $.ajax({
+                                        url: '/patient/patientAdd' ,
+                                        data: field,
+                                        async: false,//非异步，需要等待提交成功
+                                        cache:false,//不需要缓存
+                                        success:function (str){
+                                            if (str.code === 0){
+                                                table.reload('table-load');//刷新
+                                            }
+                                            layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                        }
+                                    });
+                                    layer.close(index);  //关闭弹窗
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index){
+
+                            }
+                        });
+                        break;
+                    case 'querySearch':
+                        var param = $('#param').val();
+                        table.reload('table-load',{
+                            where: {
+                                param: param
+                            }
+                        });
+                        $('#param').val();
+                        break;
+                }
+            });
+            //监听编辑和删除按钮
+            table.on('tool(main-table)',function (obj){
+                var data = obj.data; //当前行所有对象
+                switch (obj.event){
+                    case 'edit':
+                        layer.open({
+                            type : 2,
+                            title : '修改病人信息' ,
+                            content:'/patient/queryPatientByIdB?id=' + data.id,
+                            shade:[0.8,'#393d49'],
+                            area:['900px','600px'],
+                            btn: ['确定','取消'],
+                            yes:function (index,layero){
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data){
+                                    var field = data.field;
+                                    $.ajax({
+                                        url: '/patient/patientEdit' ,
+                                        data: field,
+                                        async:false,//非异步，需要等待提交成功
+                                        cache:false,//不需要缓存
+                                        success:function (str){
+                                            if (str.code === 0){
+                                                table.reload('table-load');//刷新
+                                            }
+                                            layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                        }
+                                    });
+                                    layer.close(index);  //关闭弹窗
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index){
+
+                            }
+                        });
+                        break;
+                    case 'del':
+                        layer.confirm('确认要删除吗?',function (index){
+                            $.ajax({
+                                url: '/patient/delPatientById?id=' +data.id ,
+                                data: null,
+                                async:false,//非异步，需要等待提交成功
+                                cache:false,//不需要缓存
+                                success:function (str){
+                                    table.reload('table-load');//刷新
+                                    layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                }
+                            });
+                        });
+                        break;
+                    case 'move' :
+                        layer.open({
+                            type : 2,
+                            title : '修改病人信息' ,
+                            content:'/patient/queryPatientByIdC?id=' + data.id,
+                            shade:[0.8,'#393d49'],
+                            area:['900px','600px'],
+                            btn: ['确定','取消'],
+                            yes:function (index,layero){
+                                var iframeWindow = window['layui-layer-iframe'+index];
+                                var submit = layero.find('iframe').contents().find("#LAY-front-submit");
+                                //监听提交
+                                iframeWindow.layui.form.on('submit(LAY-front-submit)',function (data){
+                                    var field = data.field;
+                                    $.ajax({
+                                        url: '/patient/patientEdit' ,
+                                        data: field,
+                                        async:false,//非异步，需要等待提交成功
+                                        cache:false,//不需要缓存
+                                        success:function (str){
+                                            if (str.code === 0){
+                                                table.reload('table-load');//刷新
+                                            }
+                                            layer.msg(str.msg,{icon:str.icon,anim:str.anim});
+                                        }
+                                    });
+                                    layer.close(index);  //关闭弹窗
+                                });
+                                submit.trigger('click');
+                            },
+                            success:function (layero,index){
+
+                            }
+                        });
+                        break;
+
+                }
+            });
+        });
+    </script>
+</body>
+</html>

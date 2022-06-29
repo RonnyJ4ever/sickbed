@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh_CN" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>智慧病床系统</title>
+    <link rel="stylesheet" th:href="@{/static/layui/css/layui.css}" media="all">
+    <link rel="stylesheet" th:href="@{/static/admin/style.css}" media="all">
+</head>
+
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+        <div class="layui-header">
+            <div class="layui-logo">智慧病床系统</div>
+            <ul class="layui-nav layui-layout-right">
+                 <li class="layui-nav-item"><a href="/logout">退出系统</a></li>
+           </ul>
+        </div>
+
+        <!--左侧菜单-->
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <ul class="layui-nav layui-nav-tree" lay-accordion="true">
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" class="layui-nav-item">信息管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="#" class="site-demo-active" lay-href="/patient" data-id="1" data-title="病人信息">病人信息</a></dd>
+                            <dd><a href="#" class="site-demo-active" lay-href="/doctor" data-id="2" data-title="医生信息">医生信息</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" class="layui-nav-item">科室信息管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="#" class="site-demo-active" lay-href="/dept" data-id="3" data-title="科室信息">科室信息</a></dd>
+                            <dd><a href="#" class="site-demo-active" lay-href="/potion" data-id="4" data-title="药品信息">药品信息</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" class="layui-nav-item">病床信息管理</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="#" class="site-demo-active" lay-href="/room" data-id="5" data-title="病房信息">病房信息</a></dd>
+                            <dd><a href="#" class="site-demo-active" lay-href="/bed" data-id="6" data-title="推荐病房">病床信息</a></dd>
+                            <dd><a href="#" class="site-demo-active" lay-href="/apparatus" data-id="7" data-title="病房器械维护">病房器械维护</a></dd>
+                        </dl>
+                    </li>
+                    <li class="layui-nav-item">
+                        <a href="javascript:;" class="layui-nav-item">信息维护系统</a>
+                        <dl class="layui-nav-child">
+                            <dd><a href="#" class="site-demo-active" lay-href="/user" data-id="8" data-title="管理员信息维护">信息维护</a></dd>
+                        </dl>
+                    </li>
+                </ul>
+
+            </div>
+        </div>
+        <!--主体部分-->
+        <div class="layui-body">
+            <div class="layui-tab" lay-filter="demo" lay-allowclose="true" style="margin: 0;">
+                <ul class="layui-tab-title"></ul>
+                <div class="layui-tab-content"></div>
+            </div>
+        </div>
+
+        <!--底部固定区域-->
+
+        <div class="layui-footer">
+            智慧病床系统 -- 底部固定区域
+        </div>
+    </div>
+    <script th:src="@{/static/layui/layui.js}"></script>
+    <script>
+        layui.use(['element','layer','jquery'],function (){
+            var element = layui.element;
+            var $ = layui.$;
+            //左侧菜单点击事件
+            $('.site-demo-active').on('click',function (){
+                var dataid = $(this);
+                //判断
+                if ($(".layui-tab-title li[lay-id]").length<=0){
+                    active.tabAdd(dataid.attr('lay-href'),dataid.attr("data-id"),dataid.attr("data-title"));
+                }else{
+                    var isExist = false;
+                    $.each($(".layui-tab-title li[lay-id]"),function (){
+                        if ($(this).attr("lay-id") == dataid.attr("data-id")){
+                            isExist = true;
+                        }
+                    });
+                    if (isExist == false){
+                        active.tabAdd(dataid.attr('lay-href'),dataid.attr("data-id"),dataid.attr("data-title"));
+                    }
+                }
+                active.tabChange(dataid.attr("data-id"));
+            });
+
+            //绑定active,绑定几项事件，后面可以用active调用这些事件
+            var active = {
+                //新增tab项
+            //id对应data.id  name对于标题
+                tabAdd: function (url,id,name){
+                    element.tabAdd('demo',{
+                        title:name,
+                        content:'<iframe data-frameid="'+id+'"scorlling="auto" frameborder="0" src="'+url+'"style="width:100%;height:700px;"></iframe>',
+                        id:id
+                    });
+                },
+
+                //根据id切换到指定tab
+                tabChange: function (id){
+                    element.tabChange('demo',id);
+                },
+
+                //关闭指定的tab
+                tabDelete: function (id){
+                    element.tabDelete('demo',id);
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>
